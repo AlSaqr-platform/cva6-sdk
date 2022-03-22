@@ -7,7 +7,7 @@ DEST     := $(abspath $(RISCV))
 PATH     := $(DEST)/bin:$(PATH)
 
 #TOOLCHAIN_PREFIX := $(ROOT)/buildroot/output/host/bin/riscv$(XLEN)-buildroot-linux-gnu-
-TOOLCHAIN_PREFIX := /opt/riscv/bin/riscv$(XLEN)-unknown-linux-gnu-
+TOOLCHAIN_PREFIX := /scratch/ytortorella/hero_devel/install/bin/
 CC          := $(TOOLCHAIN_PREFIX)gcc
 OBJCOPY     := $(TOOLCHAIN_PREFIX)objcopy
 MKIMAGE     := u-boot/tools/mkimage
@@ -84,12 +84,17 @@ rootfs/cachetest.elf: $(CC)
 	cd ./cachetest/ && $(CC) cachetest.c -o cachetest.elf
 	cp ./cachetest/cachetest.elf $@
 
+# benchmark for the cache subsystem
+rootfs/hello.elf: $(CC)
+	cd ./hello/ && $(CC) hello.c -o hello.elf
+	cp ./hello/hello.elf $@
+
 # cool command-line tetris
 rootfs/tetris: $(CC)
 	cd ./vitetris/ && make clean && ./configure CC=$(CC) && make
 	cp ./vitetris/tetris $@
 
-$(RISCV)/vmlinux: $(buildroot_defconfig) $(linux_defconfig) $(busybox_defconfig) $(CC) rootfs/cachetest.elf rootfs/tetris
+$(RISCV)/vmlinux: $(buildroot_defconfig) $(linux_defconfig) $(busybox_defconfig) $(CC) rootfs/cachetest.elf rootfs/tetris 
 	mkdir -p $(RISCV)
 	make -C buildroot $(buildroot-mk)
 	cp buildroot/output/images/vmlinux $@
