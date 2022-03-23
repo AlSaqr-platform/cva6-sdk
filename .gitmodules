@@ -17,4 +17,4 @@
 	url = https://github.com/eyssartk/u-boot
 [submodule "opensbi"]
 	path = opensbi
-	url = https://github.com/riscv/opensbi.git
+	url = git@github.com:AlSaqr-platform/opensbi.git
