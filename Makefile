@@ -116,6 +116,11 @@ $(RISCV)/fw_payload.bin: $(RISCV)/Image
 	cp opensbi/build/platform/$(PLATFORM)/firmware/fw_payload.elf $(RISCV)/fw_payload.elf
 	cp opensbi/build/platform/$(PLATFORM)/firmware/fw_payload.bin $(RISCV)/fw_payload.bin
 
+$(RISCV)/simple_fw_payload.bin:
+	make -C opensbi $(sbi-mk)
+	cp opensbi/build/platform/$(PLATFORM)/firmware/fw_payload.elf $(RISCV)/fw_payload.elf
+	cp opensbi/build/platform/$(PLATFORM)/firmware/fw_payload.bin $(RISCV)/fw_payload.bin
+
 # OpenSBI for Spike with Linux as payload
 $(RISCV)/spike_fw_payload.elf: PLATFORM=generic
 $(RISCV)/spike_fw_payload.elf: $(RISCV)/Image
@@ -144,6 +149,7 @@ format-sd: $(SDDEVICE)
 gcc: $(CC)
 vmlinux: $(RISCV)/vmlinux
 fw_payload.bin: $(RISCV)/fw_payload.bin
+simple_fw_payload.bin: $(RISCV)/simple_fw_payload.bin
 uImage: $(RISCV)/uImage
 spike_payload: $(RISCV)/spike_fw_payload.elf
 
