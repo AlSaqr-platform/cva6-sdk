@@ -20,4 +20,4 @@
 	url = git@github.com:planvtech/opensbi.git
 [submodule "Splash-3"]
 	path = Splash-3
-	url = git@github.com:planvtech/Splash-3.git
+	url = git@github.com:Alsaqr-platform/Splash-3.git
