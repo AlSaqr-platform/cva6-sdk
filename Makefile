@@ -14,9 +14,9 @@ MKIMAGE     := u-boot/tools/mkimage
 NR_CORES := $(shell nproc)
 
 # SBI options
-PLATFORM := fpga/ariane
-FW_FDT_PATH ?=
-sbi-mk = PLATFORM=$(PLATFORM) CROSS_COMPILE=$(TOOLCHAIN_PREFIX) $(if $(FW_FDT_PATH),FW_FDT_PATH=$(FW_FDT_PATH),)
+PLATFORM := fpga/alsaqr
+DTS := opensbi/platform/$(PLATFORM)/alsaqr.dts
+sbi-mk = PLATFORM=$(PLATFORM) CROSS_COMPILE=$(TOOLCHAIN_PREFIX)
 ifeq ($(XLEN), 32)
 sbi-mk += PLATFORM_RISCV_ISA=rv32ima PLATFORM_RISCV_XLEN=32
 else
@@ -83,12 +83,7 @@ rootfs/cachetest.elf: $(CC)
 	cd ./cachetest/ && $(CC) cachetest.c -o cachetest.elf
 	cp ./cachetest/cachetest.elf $@
 
-# cool command-line tetris
-rootfs/tetris: $(CC)
-	cd ./vitetris/ && make clean && ./configure CC=$(CC) && make
-	cp ./vitetris/tetris $@
-
-$(RISCV)/vmlinux: $(buildroot_defconfig) $(linux_defconfig) $(busybox_defconfig) $(CC) rootfs/cachetest.elf rootfs/tetris
+$(RISCV)/vmlinux: $(buildroot_defconfig) $(linux_defconfig) $(busybox_defconfig) $(CC) rootfs/cachetest.elf
 	mkdir -p $(RISCV)
 	make -C buildroot $(buildroot-mk)
 	cp buildroot/output/images/vmlinux $@
@@ -112,7 +107,7 @@ $(MKIMAGE) u-boot/u-boot.bin: $(CC)
 	make -C u-boot CROSS_COMPILE=$(TOOLCHAIN_PREFIX)
 
 # OpenSBI with u-boot as payload
-$(RISCV)/fw_payload.bin: $(RISCV)/u-boot.bin
+$(RISCV)/fw_payload.bin: $(RISCV)/Image
 	make -C opensbi FW_PAYLOAD_PATH=$< $(sbi-mk)
 	cp opensbi/build/platform/$(PLATFORM)/firmware/fw_payload.elf $(RISCV)/fw_payload.elf
 	cp opensbi/build/platform/$(PLATFORM)/firmware/fw_payload.bin $(RISCV)/fw_payload.bin
@@ -148,19 +143,26 @@ fw_payload.bin: $(RISCV)/fw_payload.bin
 uImage: $(RISCV)/uImage
 spike_payload: $(RISCV)/spike_fw_payload.elf
 
+vcu: uImage fw_payload.bin alsaqr.dtb
+
 images: $(CC) $(RISCV)/fw_payload.bin $(RISCV)/uImage
 
+alsaqr.dtb: $(DTS)
+	dtc -I dts $< -O dtb -o $@
+
 clean:
-	rm -rf $(RISCV)/vmlinux cachetest/*.elf rootfs/tetris rootfs/cachetest.elf
+	rm -rf $(RISCV)/vmlinux cachetest/*.elf rootfs/cachetest.elf
 	rm -rf $(RISCV)/fw_payload.bin $(RISCV)/uImage $(RISCV)/Image.gz
+	rm -f alsaqr.dtb
 	make -C u-boot clean
 	make -C opensbi distclean
+
 
 clean-all: clean
 	rm -rf $(RISCV) riscv-isa-sim/build riscv-tests/build
 	make -C buildroot clean
 
-.PHONY: gcc vmlinux images help fw_payload.bin uImage
+.PHONY: gcc vmlinux images help fw_payload.bin uImage vcu
 
 help:
 	@echo "usage: $(MAKE) [tool/img] ..."

@@ -1,6 +1,7 @@
 install*
 build
 *.elf
+*.dtb
 rootfs/tetris
 
 riscv-gnu-toolchain/build
