@@ -8,11 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-extern int printf(const char *format, ...);
-
-#define read_csr(reg) ({ unsigned long __tmp; \
-  asm volatile ("csrr %0, " #reg : "=r"(__tmp)); \
-  __tmp; })
+#include "cachetest.h"
 
 char buffer[1024 * 1024];
 
@@ -22,14 +18,11 @@ void sweep(int stride)
   int max_j = 4 * 1024;
   int working_set = max_j * stride;
 
+  printf("start...\n");
+  START_STATS();
+
   for(int i = 0; i < 10; i++)
   {
-    if(i == 1)
-    {
-      instret_start = read_csr(instret);
-      cycle_start = read_csr(cycle);
-    }
-
     for(int j = 0; j < max_j; j += 4)
     {
       buffer[(j + 0) * stride] = 0;
@@ -39,11 +32,9 @@ void sweep(int stride)
     }
   }
 
-  long instrets = read_csr(instret) - instret_start;
-  long cycles = read_csr(cycle) - cycle_start;
+  STOP_STATS();
+  PRINT_STATS();
 
-  printf("working_set = %2dKB, %ld instructions, %ld cycles, CPI = %f\n", 
-         working_set / 1024, instrets, cycles, (float) cycles / instrets);
 }
 
 int main()

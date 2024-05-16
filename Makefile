@@ -93,6 +93,12 @@ rootfs/perf: $(CC)
 	make -C Splash-3/codes all
 	mkdir -p $@
 	cp -r Splash-3/codes/splash3 $@/splash3
+	echo "CACHE TEST" >> rootfs/splash3
+	echo "./cachetest.elf" >> rootfs/splash3
+	echo "SPLASH-3" >> rootfs/splash3
+	echo "./perf/splash3/runtest" >> rootfs/splash3
+	chmod +x rootfs/splash3
+
 
 $(RISCV)/vmlinux: $(buildroot_defconfig) $(linux_defconfig) $(busybox_defconfig) $(CC) rootfs/cachetest.elf rootfs/tetris rootfs/perf
 	mkdir -p $(RISCV)
